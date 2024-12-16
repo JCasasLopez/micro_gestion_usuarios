@@ -4,14 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import init.model.UsuarioDto;
 
 public class UsuarioDtoTests {
-	
-	@Autowired
-	UsuarioDto usuarioDto;
 	
 	@Test
 	@DisplayName("El rol de usuario se asigna automáticamente de forma correcta")
@@ -19,7 +15,7 @@ public class UsuarioDtoTests {
 		//Arrange
 		
 		//Act
-		UsuarioDto usuario = new UsuarioDto(0, "a@gmail.com", "Yorch", "1234");
+		UsuarioDto usuario = new UsuarioDto("a@gmail.com", "Yorch", "1234");
 
 		//Assign
 		assertTrue(usuario.getRoles().size() == 1);

@@ -12,15 +12,24 @@ public class UsuarioDto {
 	private String password;
 	private Set<Role> roles;
 	
-	public UsuarioDto(int idUsuario, String email, String username, String password) {
+	//Para mapear de Usuario a UsuarioDTO
+	public UsuarioDto(int idUsuario, String email, String username, String password, Set<Role> roles) {
 		this.idUsuario = idUsuario;
 		this.email = email;
 		this.username = username;
 		this.password = password;
-		//Automáticamente le asigna el rol de usuario. Para convertirle en ADMIN, hay que añadir este
-		//rol manualmente en la base de datos
-		this.roles = new HashSet<Role>();
-		roles.add(new Role(0, "ROLE_USER"));
+		this.roles = roles;
+	}
+	
+	//Para la creación de un nuevo usuario
+	//Se asigna el rol de usuario automáticamente
+	public UsuarioDto(String email, String username, String password) {
+		this.idUsuario = 0;
+		this.email = email;
+		this.username = username;
+		this.password = password;
+	    this.roles = new HashSet<>();
+		this.roles.add(new Role(0, "ROLE_USER"));
 	}
 
 	public UsuarioDto() {
