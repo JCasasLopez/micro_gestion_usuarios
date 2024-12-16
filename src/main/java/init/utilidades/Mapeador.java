@@ -18,6 +18,13 @@ public class Mapeador {
 		return new UsuarioDto(usuario.getIdUsuario(),
 						   	  usuario.getEmail(),
 						   	  usuario.getUsername(),
+						   	  usuario.getPassword(),
+						   	  usuario.getRoles());
+	}
+	
+	public UsuarioDto usuarioEntityToDtoNuevoUsuario(Usuario usuario) {
+		return new UsuarioDto(usuario.getEmail(),
+						   	  usuario.getUsername(),
 						   	  usuario.getPassword());
 	}
 }
