@@ -17,6 +17,7 @@ public class UsuariosServiceImpl implements UsuariosService {
 	
 	UsuariosDao usuariosDao;
 	Mapeador mapeador;
+	private static final String ROLE_ADMIN = "USER_ADMIN";
 	
 	public UsuariosServiceImpl(UsuariosDao usuariosDao, Mapeador mapeador) {
 		this.usuariosDao = usuariosDao;
@@ -59,9 +60,10 @@ public class UsuariosServiceImpl implements UsuariosService {
 	}
 
 	@Override
-	public boolean validarAdmin(int idUsuario) {
+	public boolean isAdmin(int idUsuario) {
 		try {
 			
+			boolean usuarioEsAdmin = false;
 			Optional<Usuario> usuarioBuscado = usuariosDao.findById(idUsuario);
 			
 			if(usuarioBuscado.isEmpty()) {
@@ -70,11 +72,14 @@ public class UsuariosServiceImpl implements UsuariosService {
 			
 			Set<Role> roles = usuarioBuscado.get().getRoles();
 			for(Role r:roles) {
-				
+				if(r.getNombre().equals(ROLE_ADMIN)) {
+					usuarioEsAdmin = true;
+				}
 			}
+			return usuarioEsAdmin;
 			
 		} catch (Exception ex) {
-			throw new UsuarioDatabaseException("Error al intentar borrar usuario en la base de datos");
+			throw new UsuarioDatabaseException("Error al intentar consultar con la base de datos");
 		}
 
 	}
