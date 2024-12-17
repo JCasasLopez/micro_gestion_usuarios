@@ -30,4 +30,8 @@ public class Mapeador {
 						   	  usuario.getRoles());
 	}
 	
+	//No tiene sentido mapear de Usuario a la versión "nuevo usuario" de UsuarioDto, ya que ese 
+	//constructor solo sea usa para crear nuevos usuarios, es decir, solo va a funcionar en la 
+	//otra dirección (de Entity a Dto).
+	
 }

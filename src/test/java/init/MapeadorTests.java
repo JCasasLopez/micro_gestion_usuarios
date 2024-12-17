@@ -2,8 +2,10 @@ package init;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,15 +15,19 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import init.entities.Role;
 import init.entities.Usuario;
 import init.model.UsuarioDto;
 import init.utilidades.Mapeador;
 
 //Todas estas anotaciones evitan tener que levantar el contexto entero con @SpringBootTest
+
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration
 @Import(Mapeador.class)
 public class MapeadorTests {
+	
+	//Solo testeo los casos "happy-path" ya que los datos serán validados en capas superiores.
 
 	@Autowired
 	private Mapeador mapeador;
@@ -33,7 +39,7 @@ public class MapeadorTests {
 		UsuarioDto usuarioDto = new UsuarioDto(0, "a@gmail.com", "Yorch", "1234", new HashSet<>());
 		
 		//Act
-		Usuario usuarioMapeado = mapeador.usuarioDtoNormalToEntity(usuarioDto);
+		Usuario usuarioMapeado = mapeador.usuarioDtoToEntity(usuarioDto);
 		
 		//Assert
 		assertAll("Verificación mapeo UsuarioDto a Usuario - Versión normal",
@@ -62,17 +68,16 @@ public class MapeadorTests {
 		assertAll("Verificación mapeo UsuarioDto a Usuario - Nuevo Usuario",
 				() -> assertEquals(usuarioDto.getIdUsuario(), 0, "idUsuario no es 0"),
 				() -> assertEquals(usuarioDto.getEmail(), usuarioMapeado.getEmail(),
-																			"Los emails no coinciden"),
+																		"Los emails no coinciden"),
 				() -> assertEquals(usuarioDto.getUsername(), usuarioMapeado.getUsername(),
-																			"Los usernames no coinciden"),
+																		"Los usernames no coinciden"),
 				() -> assertEquals(usuarioDto.getPassword(), usuarioMapeado.getPassword(),
-																			"Las contraseñas no coinciden"),
-				() -> assertEquals(usuarioDto.getRoles().size(), 1, "No se ha asignado el rol usuario"));
+																		"Las contraseñas no coinciden"),
+				() -> assertEquals(usuarioDto.getRoles().size(), 1, "No se ha asignado el rol usuario"),
+				() -> assertEquals("ROLE_USER", usuarioDto.getRoles().iterator().next().getNombre(), 
+					    												"El rol asignado no es ROLE_USER"));
 	}
-	
-	//Solo mapea a la versión "completa" de UsuarioDto
-	//No tiene sentido mapear a la otra, ya que ese constructor solo sea usa para crear
-	//nuevos usuarios, es decir, solo va a funcionar en la otra dirección (de Entity a Dto)
+		
 	@Test
 	@DisplayName("Mapea correctamente de Usuario a UsuarioDto (normal)")
 	public void mapeaCorrectamenteAUsuarioDto() {
@@ -92,5 +97,23 @@ public class MapeadorTests {
 																			"Los usernames no coinciden"),
 				() -> assertEquals(usuario.getPassword(), usuarioMapeado.getPassword(),
 																			"Las contraseñas no coinciden"));
+	}
+	
+	@Test
+	@DisplayName("Mapea correctamente usuario con múltiples roles")
+	public void mapeaCorrectamenteUsuarioConMultiplesRoles() {
+	    //Arrange
+	    Set<Role> roles = new HashSet<>();
+	    roles.add(new Role(1, "ROLE_USER"));
+	    roles.add(new Role(2, "ROLE_ADMIN"));
+		Usuario usuario = new Usuario(0, "a@gmail.com", "Yorch", "1234");
+	    usuario.setRoles(roles);
+
+	    //Act
+	    UsuarioDto usuarioMapeado = mapeador.usuarioEntityToDto(usuario);
+
+	    //Assert
+	    assertEquals(2, usuarioMapeado.getRoles().size(), "No se mapearon todos los roles");
+	    assertTrue(usuarioMapeado.getRoles().containsAll(roles), "Los roles no coinciden");
 	}
 }
