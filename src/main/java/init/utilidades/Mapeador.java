@@ -7,8 +7,16 @@ import init.model.UsuarioDto;
 
 @Component
 public class Mapeador {
+	//¿Vamos a necesitar este método realmente?
 	public Usuario usuarioDtoToEntity(UsuarioDto usuario) {
 		return new Usuario(usuario.getIdUsuario(),
+						   usuario.getEmail(),
+						   usuario.getUsername(),
+						   usuario.getPassword());
+	}
+	
+	public Usuario usuarioDtoNuevoUsuarioToEntity(UsuarioDto usuario) {
+		return new Usuario(0,
 						   usuario.getEmail(),
 						   usuario.getUsername(),
 						   usuario.getPassword());
@@ -22,9 +30,4 @@ public class Mapeador {
 						   	  usuario.getRoles());
 	}
 	
-	public UsuarioDto usuarioEntityToDtoNuevoUsuario(Usuario usuario) {
-		return new UsuarioDto(usuario.getEmail(),
-						   	  usuario.getUsername(),
-						   	  usuario.getPassword());
-	}
 }
