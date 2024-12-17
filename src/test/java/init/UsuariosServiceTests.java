@@ -3,10 +3,15 @@ package init;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,6 +25,7 @@ import init.dao.UsuariosDao;
 import init.entities.Usuario;
 import init.exception.DuplicateEmailException;
 import init.exception.DuplicateUsernameException;
+import init.exception.NoSuchUserException;
 import init.exception.UsuarioDatabaseException;
 import init.model.UsuarioDto;
 import init.service.UsuariosServiceImpl;
@@ -38,7 +44,7 @@ public class UsuariosServiceTests {
 	UsuariosServiceImpl usuariosServiceImpl;
 	
 	@Test
-	@DisplayName("El usuario dio de alta correctamente")
+	@DisplayName("El usuario se dio de alta correctamente")
 	public void altaUsuario_happyPath() {
 		//Arrange
 		UsuarioDto usuarioDto = new UsuarioDto("a@gmail.com", "Yorch", "1234");
@@ -53,6 +59,13 @@ public class UsuariosServiceTests {
 		UsuarioDto usuarioPersistido = usuariosServiceImpl.altaUsuario(usuarioDto);
 		
 		//Assert
+		var inOrder = inOrder(usuariosDao, usuariosDao, mapeador, usuariosDao, mapeador);
+		inOrder.verify(usuariosDao).findByEmail(usuario.getEmail());
+		inOrder.verify(usuariosDao).findByUsername(usuario.getUsername());
+		inOrder.verify(mapeador).usuarioDtoNuevoUsuarioToEntity(usuarioDto);
+		inOrder.verify(usuariosDao).save(usuario);
+		inOrder.verify(mapeador).usuarioEntityToDto(usuario);
+		
 		assertAll("Verificación persistencia usuario",
 				() -> assertEquals(usuario.getEmail(), usuarioPersistido.getEmail(),
 																			"Los emails no coinciden"),
@@ -107,9 +120,54 @@ public class UsuariosServiceTests {
 		when(usuariosDao.save(usuario)).thenThrow(new DataIntegrityViolationException("Error simulado"));
 		
 		//Act & Assert
-				assertThrows(UsuarioDatabaseException.class, () -> {
-					usuariosServiceImpl.altaUsuario(usuarioDto);
-				}, "No se ha lanzado una excepción UsuarioDatabaseException como se esperaba");
+		assertThrows(UsuarioDatabaseException.class, () -> {usuariosServiceImpl.altaUsuario(usuarioDto);}, 
+				"No se ha lanzado una excepción UsuarioDatabaseException como se esperaba");
 	}
-
+	
+	@Test
+	@DisplayName("El usuario se borró correctamente")
+	public void bajaUsuario_happyPath() {
+		//Arrange
+		int idUsuario = 0;
+		Usuario usuario = new Usuario();
+	    Optional<Usuario> optionalUsuario = Optional.of(usuario);
+		when(usuariosDao.findById(idUsuario)).thenReturn(optionalUsuario);
+		doNothing().when(usuariosDao).deleteById(idUsuario);
+		
+		//Act
+		usuariosServiceImpl.bajaUsuario(idUsuario);
+		
+		//Assert
+		verify(usuariosDao, times(1)).deleteById(idUsuario);
+	}
+	
+	@Test
+	@DisplayName("No existe ese usuario - El usuario NO se borró")
+	public void bajaUsuario_NoSuchUserException() {
+		//Arrange
+		int idUsuario = 0;
+		Optional<Usuario> optionalUsuario = Optional.empty();
+		when(usuariosDao.findById(idUsuario)).thenReturn(optionalUsuario);
+		
+		//Act & Assert
+		assertThrows(NoSuchUserException.class, () -> {usuariosServiceImpl.bajaUsuario(idUsuario);}, 
+				"No se ha lanzado una excepción NoSuchUserException como se esperaba");
+	}
+	
+	@Test
+	@DisplayName("Error en la base de datos - El usuario NO se borró")
+	public void bajaUsuario_errorBaseDatos() {
+		//Arrange
+		int idUsuario = 0;
+		Usuario usuario = new Usuario();
+	    Optional<Usuario> optionalUsuario = Optional.of(usuario);
+		when(usuariosDao.findById(idUsuario)).thenReturn(optionalUsuario);
+		doThrow(new DataIntegrityViolationException("Error simulado")).when(usuariosDao).deleteById(idUsuario);		
+		
+		//Act & Assert
+		assertThrows(UsuarioDatabaseException.class, () -> {usuariosServiceImpl.bajaUsuario(idUsuario);}, 
+						"No se ha lanzado una excepción UsuarioDatabaseException como se esperaba");
+	}
+	
 }
+	
