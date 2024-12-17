@@ -3,6 +3,7 @@ package init;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -13,10 +14,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import init.dao.UsuariosDao;
 import init.entities.Usuario;
 import init.exception.DuplicateEmailException;
+import init.exception.DuplicateUsernameException;
+import init.exception.UsuarioDatabaseException;
 import init.model.UsuarioDto;
 import init.service.UsuariosServiceImpl;
 import init.utilidades.Mapeador;
@@ -34,7 +38,7 @@ public class UsuariosServiceTests {
 	UsuariosServiceImpl usuariosServiceImpl;
 	
 	@Test
-	@DisplayName("El usuario se puede dar de alta")
+	@DisplayName("El usuario dio de alta correctamente")
 	public void altaUsuario_happyPath() {
 		//Arrange
 		UsuarioDto usuarioDto = new UsuarioDto("a@gmail.com", "Yorch", "1234");
@@ -59,7 +63,7 @@ public class UsuariosServiceTests {
 	}
 	
 	@Test
-	@DisplayName("El usuario NO se puede dar de alta - Emails duplicados")
+	@DisplayName("Emails duplicados - El usuario NO se puede dar de alta")
 	public void altaUsuario_emailsDuplicados() {
 		//Arrange
 		UsuarioDto usuarioDto = new UsuarioDto("a@gmail.com", "Yorch", "1234");
@@ -70,8 +74,42 @@ public class UsuariosServiceTests {
 		//Act & Assert
 		assertThrows(DuplicateEmailException.class, () -> {
 			usuariosServiceImpl.altaUsuario(usuarioDto);
-		}, "Debería haberse lanzado una excepción DuplicateEmailException, pero no se ha lanzado");
+		}, "No se ha lanzado una excepción DuplicateEmailException como se esperaba");
 		
+	}
+	
+	@Test
+	@DisplayName("Usernames duplicados - El usuario NO se puede dar de alta")
+	public void altaUsuario_usernamesDuplicados() {
+		//Arrange
+		UsuarioDto usuarioDto = new UsuarioDto("a@gmail.com", "Yorch", "1234");
+		Usuario usuario = new Usuario(0, "a@gmail.com", "Yorch", "1234");
+		List<Usuario> usuarios = List.of();
+		when(usuariosDao.findByEmail(usuario.getEmail())).thenReturn(null);
+		when(usuariosDao.findByUsername(usuario.getUsername())).thenReturn(usuarios);
+		
+		//Act & Assert
+		assertThrows(DuplicateUsernameException.class, () -> {
+			usuariosServiceImpl.altaUsuario(usuarioDto);
+		}, "No se ha lanzado una excepción DuplicateUsernameException como se esperaba");
+		
+	}
+	
+	@Test
+	@DisplayName("Error base de datos - El usuario NO se puede dar de alta")
+	public void altaUsuario_errorBaseDatos() {
+		//Arrange
+		UsuarioDto usuarioDto = new UsuarioDto("a@gmail.com", "Yorch", "1234");
+		Usuario usuario = new Usuario(0, "a@gmail.com", "Yorch", "1234");
+		when(usuariosDao.findByEmail(usuario.getEmail())).thenReturn(null);
+		when(usuariosDao.findByUsername(usuario.getUsername())).thenReturn(null);
+		when(mapeador.usuarioDtoNuevoUsuarioToEntity(usuarioDto)).thenReturn(usuario);
+		when(usuariosDao.save(usuario)).thenThrow(new DataIntegrityViolationException("Error simulado"));
+		
+		//Act & Assert
+				assertThrows(UsuarioDatabaseException.class, () -> {
+					usuariosServiceImpl.altaUsuario(usuarioDto);
+				}, "No se ha lanzado una excepción UsuarioDatabaseException como se esperaba");
 	}
 
 }
