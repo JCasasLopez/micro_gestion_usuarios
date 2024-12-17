@@ -19,7 +19,7 @@ public class Role {
 	private int idRole;
 	@Column(unique=true)
 	private String nombre;
-	@ManyToMany()
+    @ManyToMany(mappedBy = "roles")
 	private Set<Usuario> usuarios = new HashSet<>();
 	
 	public Role(int idRole, String nombre) {

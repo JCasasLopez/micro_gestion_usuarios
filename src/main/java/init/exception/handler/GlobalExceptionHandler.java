@@ -7,11 +7,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import init.exception.DuplicateEmailException;
 import init.exception.DuplicateUsernameException;
+import init.exception.NoSuchUserException;
 import init.exception.UsuarioDatabaseException;
 
 
 @ControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler { 
 	
 	@ExceptionHandler(DuplicateEmailException.class)
 	public ResponseEntity<String> handleDuplicateEmailException(DuplicateEmailException ex){
@@ -26,6 +27,11 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(UsuarioDatabaseException.class)
 	public ResponseEntity<String> handleUsuarioDatabaseException(UsuarioDatabaseException ex){
 		return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	@ExceptionHandler(NoSuchUserException.class)
+	public ResponseEntity<String> handleNoSuchUserException(NoSuchUserException ex){
+		return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
 	}
 
 }
