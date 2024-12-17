@@ -1,6 +1,8 @@
 package init.service;
 
 import init.dao.UsuariosDao;
+import init.exception.EmailNotAvailableException;
+import init.exception.UsernameNotAvailable;
 import init.model.UsuarioDto;
 
 public class UsuariosServiceImpl implements UsuariosService {
@@ -13,8 +15,13 @@ public class UsuariosServiceImpl implements UsuariosService {
 
 	@Override
 	public boolean altaUsuario(UsuarioDto usuario) {
+		if(usuariosDao.findByEmail(usuario.getEmail()) != null) {
+			throw new EmailNotAvailableException("Ya existe un usuario con ese email");
+		}
 		
-		return false;
+		if(usuariosDao.findByUsername(usuario.getUsername()) != null) {
+			throw new UsernameNotAvailable("Ya existe un usuario con ese username");
+		}
 	}
 
 	@Override
