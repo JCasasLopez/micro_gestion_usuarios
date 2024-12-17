@@ -5,5 +5,5 @@ import init.model.UsuarioDto;
 public interface UsuariosService {
 	void altaUsuario(UsuarioDto usuario);
 	void bajaUsuario(int idUsuario);
-	boolean esAdmin(int idUsuario);
+	boolean validarAdmin(int idUsuario);
 }

@@ -1,6 +1,11 @@
 package init.service;
 
+import java.util.Optional;
+import java.util.Set;
+
 import init.dao.UsuariosDao;
+import init.entities.Role;
+import init.entities.Usuario;
 import init.exception.DuplicateEmailException;
 import init.exception.DuplicateUsernameException;
 import init.exception.NoSuchUserException;
@@ -21,17 +26,17 @@ public class UsuariosServiceImpl implements UsuariosService {
 	@Override
 	public void altaUsuario(UsuarioDto usuario) {
 		try {
-
+			
 			if(usuariosDao.findByEmail(usuario.getEmail()) != null) {
 				throw new DuplicateEmailException("Ya existe un usuario con ese email");
 			}
-
+			
 			if(usuariosDao.findByUsername(usuario.getUsername()) != null) {
 				throw new DuplicateUsernameException("Ya existe un usuario con ese username");
 			}
 			
 			usuariosDao.save(mapeador.usuarioDtoNuevoUsuarioToEntity(usuario));
-
+			
 		} catch (Exception ex) {
 			throw new UsuarioDatabaseException("Error al intentar persistir usuario en la base de datos");
 		}
@@ -54,9 +59,24 @@ public class UsuariosServiceImpl implements UsuariosService {
 	}
 
 	@Override
-	public boolean esAdmin(int idUsuario) {
-	
-		return false;
+	public boolean validarAdmin(int idUsuario) {
+		try {
+			
+			Optional<Usuario> usuarioBuscado = usuariosDao.findById(idUsuario);
+			
+			if(usuarioBuscado.isEmpty()) {
+				throw new NoSuchUserException("No existe ningún usuario con ese idUsuario");
+			}
+			
+			Set<Role> roles = usuarioBuscado.get().getRoles();
+			for(Role r:roles) {
+				
+			}
+			
+		} catch (Exception ex) {
+			throw new UsuarioDatabaseException("Error al intentar borrar usuario en la base de datos");
+		}
+
 	}
 
 }
