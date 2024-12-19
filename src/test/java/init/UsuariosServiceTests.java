@@ -13,7 +13,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -86,8 +85,7 @@ public class UsuariosServiceTests {
 		//Arrange
 		UsuarioDto usuarioDto = new UsuarioDto("a@gmail.com", "Yorch", "1234");
 		Usuario usuario = new Usuario(0, "a@gmail.com", "Yorch", "1234");
-		List<Usuario> usuarios = List.of();
-		when(usuariosDao.findByEmail(usuario.getEmail())).thenReturn(usuarios);
+		when(usuariosDao.findByEmail(usuario.getEmail())).thenReturn(usuario);
 		
 		//Act & Assert
 		assertThrows(DuplicateEmailException.class, () -> {
@@ -102,9 +100,8 @@ public class UsuariosServiceTests {
 		//Arrange
 		UsuarioDto usuarioDto = new UsuarioDto("a@gmail.com", "Yorch", "1234");
 		Usuario usuario = new Usuario(0, "a@gmail.com", "Yorch", "1234");
-		List<Usuario> usuarios = List.of();
 		when(usuariosDao.findByEmail(usuario.getEmail())).thenReturn(null);
-		when(usuariosDao.findByUsername(usuario.getUsername())).thenReturn(usuarios);
+		when(usuariosDao.findByUsername(usuario.getUsername())).thenReturn(usuario);
 		
 		//Act & Assert
 		assertThrows(DuplicateUsernameException.class, () -> {

@@ -1,5 +1,6 @@
 package init.service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -61,6 +62,19 @@ public class UsuariosServiceImpl implements UsuariosService {
 		} catch (DataIntegrityViolationException | JpaSystemException | PersistenceException ex) {
 			throw new UsuarioDatabaseException("Error al intentar borrar usuario en la base de datos");
 		}
+	}
+	
+	@Override
+	public boolean autenticacion(String username, String password) {
+		Usuario usuario = usuariosDao.findByUsername(username);
+		if(usuario == null) {
+			throw new NoSuchUserException("No existe ningún usuario con ese idUsuario");
+		}
+		
+		if(usuario.getPassword().equals(password)){
+			return true;
+		}
+		return false;
 	}
 
 	@Override
