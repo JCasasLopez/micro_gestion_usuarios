@@ -2,7 +2,9 @@ package init;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -10,8 +12,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import init.dao.UsuariosDao;
+import init.entities.Role;
 import init.entities.Usuario;
 import init.exception.DuplicateEmailException;
 import init.exception.DuplicateUsernameException;
@@ -167,6 +172,82 @@ public class UsuariosServiceTests {
 		//Act & Assert
 		assertThrows(UsuarioDatabaseException.class, () -> {usuariosServiceImpl.bajaUsuario(idUsuario);}, 
 						"No se ha lanzado una excepción UsuarioDatabaseException como se esperaba");
+	}
+	
+	@Test
+	@DisplayName("El usuario es admin")
+	public void isAdmin_usuarioEsAdmin() {
+		//Arrange
+		int idUsuario = 0;
+		Set<Role> roles = new HashSet<>(Set.of(new Role(0, "ROLE_USER"), new Role(1, "ROLE_ADMIN")));
+		Usuario usuario = new Usuario(idUsuario, "a@gmail.com", "Yorch", "1234");
+		usuario.setRoles(roles);
+	    Optional<Usuario> optionalUsuario = Optional.of(usuario);
+		when(usuariosDao.findById(idUsuario)).thenReturn(optionalUsuario);
+		
+		//Act
+		boolean isAdmin = usuariosServiceImpl.isAdmin(idUsuario);
+		
+		//Assert
+		assertTrue(isAdmin, "Se esperaba que el resultado fuera true");
+	}
+	
+	@Test
+	@DisplayName("El usuario NO es admin")
+	public void isAdmin_usuarioNoEsAdmin() {
+		//Arrange
+		int idUsuario = 0;
+		Set<Role> roles = new HashSet<>(Set.of(new Role(0, "ROLE_USER"), new Role(1, "ROLE_GUEST")));
+		Usuario usuario = new Usuario(idUsuario, "a@gmail.com", "Yorch", "1234");
+		usuario.setRoles(roles);
+	    Optional<Usuario> optionalUsuario = Optional.of(usuario);
+		when(usuariosDao.findById(idUsuario)).thenReturn(optionalUsuario);
+		
+		//Act
+		boolean isAdmin = usuariosServiceImpl.isAdmin(idUsuario);
+		
+		//Assert
+		assertFalse(isAdmin, "Se esperaba que el resultado fuera false");
+	}
+	
+	@Test
+	@DisplayName("El usuario NO tiene ningún rol")
+	public void isAdmin_usuarioNoTieneRoles() {
+		//Arrange
+		int idUsuario = 0;
+		Usuario usuario = new Usuario(idUsuario, "a@gmail.com", "Yorch", "1234");
+	    Optional<Usuario> optionalUsuario = Optional.of(usuario);
+		when(usuariosDao.findById(idUsuario)).thenReturn(optionalUsuario);
+		
+		//Act
+		boolean isAdmin = usuariosServiceImpl.isAdmin(idUsuario);
+		
+		//Assert
+		assertFalse(isAdmin, "Se esperaba que el resultado fuera false");
+	}
+	
+	@Test
+	@DisplayName("NoSuchUserException - No se encontró al usuario")
+	public void isAdmin_noSeEncontroAlUsuario() {
+		//Arrange
+		int idUsuario = 0;
+		when(usuariosDao.findById(idUsuario)).thenReturn(Optional.empty());
+		
+		//Act & Assert
+		assertThrows(NoSuchUserException.class, () -> {usuariosServiceImpl.isAdmin(idUsuario);}, 
+				"No se ha lanzado una excepción NoSuchUserException como se esperaba");
+	}
+
+	@Test
+	@DisplayName("UsuarioDatabaseException - Error en la base de datos")
+	public void isAdmin_errorBaseDatos() {
+		//Arrange
+		int idUsuario = 0;
+		when(usuariosDao.findById(idUsuario)).thenThrow(new UsuarioDatabaseException("Error simulado"));
+		
+		//Act & Assert
+		assertThrows(UsuarioDatabaseException.class, () -> {usuariosServiceImpl.isAdmin(idUsuario);}, 
+				"No se ha lanzado una excepción UsuarioDatabaseException como se esperaba");
 	}
 	
 }

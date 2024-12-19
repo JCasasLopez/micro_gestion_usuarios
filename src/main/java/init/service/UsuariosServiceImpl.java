@@ -21,7 +21,7 @@ public class UsuariosServiceImpl implements UsuariosService {
 	
 	UsuariosDao usuariosDao;
 	Mapeador mapeador;
-	private static final String ROLE_ADMIN = "USER_ADMIN";
+	private static final String ROLE_ADMIN = "ROLE_ADMIN";
 	
 	public UsuariosServiceImpl(UsuariosDao usuariosDao, Mapeador mapeador) {
 		this.usuariosDao = usuariosDao;
