@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.jpa.JpaSystemException;
+import org.springframework.stereotype.Controller;
 
 import init.dao.UsuariosDao;
 import init.entities.Role;
@@ -17,6 +18,7 @@ import init.model.UsuarioDto;
 import init.utilidades.Mapeador;
 import jakarta.persistence.PersistenceException;
 
+@Controller
 public class UsuariosServiceImpl implements UsuariosService {
 	
 	UsuariosDao usuariosDao;

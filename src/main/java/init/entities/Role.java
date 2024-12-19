@@ -17,8 +17,10 @@ public class Role {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private int idRole;
+	
 	@Column(unique=true)
 	private String nombre;
+	
     @ManyToMany(mappedBy = "roles")
 	private Set<Usuario> usuarios = new HashSet<>();
 	

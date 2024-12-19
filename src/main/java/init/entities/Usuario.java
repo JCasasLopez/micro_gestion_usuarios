@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
 
 @Entity
 @Table(name="users")
@@ -19,11 +20,17 @@ public class Usuario {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private int idUsuario;
-	@Column(unique=true)
+	
+    @Column(unique = true, nullable = false, length = 40)
+    @Email(message = "El email debe tener un formato válido")
 	private String email;
-	@Column(unique=true)
+    
+    @Column(unique = true, nullable = false, length = 20)
 	private String username;
+    
+	@Column(nullable=false)
 	private String password;
+	
 	@ManyToMany()
 	@JoinTable(name="user_roles",
 	joinColumns=@JoinColumn(name="idUsuario", referencedColumnName="idUsuario"),
