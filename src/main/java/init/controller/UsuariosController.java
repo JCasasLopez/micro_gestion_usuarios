@@ -1,5 +1,6 @@
 package init.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -20,9 +21,12 @@ public class UsuariosController {
 	public UsuariosController(UsuariosService usuariosService) {
 		this.usuariosService = usuariosService;
 	}
-	
+
 	@PostMapping(value="altaUsuario", consumes=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<String> altaUsuario(@Valid @RequestBody UsuarioDto usuario){
+		//Las excepciones que pueda lanzar altaUsuario() las maneja GlobalExceptionHandler
 		usuariosService.altaUsuario(usuario);
+		return ResponseEntity.status(HttpStatus.CREATED).body("Usuario creado correctamente");
 	}
+	
 }
