@@ -247,5 +247,51 @@ public class UsuariosServiceTests {
 				"No se ha lanzado una excepción UsuarioDatabaseException como se esperaba");
 	}
 	
+	@Test
+	@DisplayName("El usuario se autenticó correctamente")
+	public void autenticacion_correcta() {
+		//Arrange
+		String username = "Yorch";
+		String password = "1234";
+		Usuario usuario = new Usuario(0, "a@gmail.com", username, password);
+		when(usuariosDao.findByUsername(username)).thenReturn(usuario);
+		
+		//Act
+		boolean autenticacion = usuariosServiceImpl.autenticacion(username, password);
+		
+		//Assert
+		assertTrue(autenticacion, "La autenticación no se llevó a cabo correctamente");
+	}
+	
+	@Test
+	@DisplayName("El usuario NO se autenticó correctamente")
+	public void autenticacion_incorrecta() {
+		//Arrange
+		String username = "Yorch";
+		String password = "1234";
+		Usuario usuario = new Usuario(0, "a@gmail.com", username, "qwerty");
+		when(usuariosDao.findByUsername(username)).thenReturn(usuario);
+		
+		//Act
+		boolean autenticacion = usuariosServiceImpl.autenticacion(username, password);
+		
+		//Assert
+		assertFalse(autenticacion, "La autenticación se llevó a cabo correctamente");
+	}
+	
+	@Test
+	@DisplayName("NoSuchUserException - No se encontró al usuario al intentar autenticarle")
+	public void autenticacion_noSeEncontroAlUsuario() {
+		//Arrange
+		String username = "Yorch";
+		String password = "1234";
+		when(usuariosDao.findByUsername(username)).thenReturn(null);
+		
+		//Act & Assert
+		assertThrows(NoSuchUserException.class, () -> {usuariosServiceImpl.autenticacion(username, password);}, 
+						"No se ha lanzado una excepción NoSuchUserException como se esperaba");
+		
+	}
+	
 }
 	
